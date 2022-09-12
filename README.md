@@ -96,13 +96,68 @@ Actions Semi Platforms (ARCH_ACTIONS) [N/y/?] (NEW)
 .
 ```
 
-Copied working config as above and restarted make. When it camt to
+Copied working config as above and restarted make. When it came to
 
 ```text
     Automatically sign all modules (MODULE_SIG_ALL) [Y/n/?] (NEW) n
 ```
 
 Answer 'n' to sidestep the certificate issue. There were a few other questions that I left default.
+
+### Try 2
+
+```text
+hbarta@olive:~/Downloads/linux-5.19.8$ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- bindeb-pkg -j8
+sh ./scripts/package/mkdebian
+dpkg-buildpackage -r"fakeroot -u" -a$(cat debian/arch)  -b -nc -uc
+dpkg-buildpackage: info: source package linux-upstream
+dpkg-buildpackage: info: source version 5.19.8-1
+dpkg-buildpackage: info: source distribution bullseye
+dpkg-buildpackage: info: source changed by hbarta <hbarta@olive>
+dpkg-buildpackage: info: host architecture arm64
+ dpkg-source --before-build .
+ debian/rules binary
+make KERNELRELEASE=5.19.8 ARCH=arm64    KBUILD_BUILD_VERSION=1 -f ./Makefile
+  DESCEND bpf/resolve_btfids
+  CALL    scripts/atomic/check-atomics.sh
+  CALL    scripts/checksyscalls.sh
+  CHK     include/generated/compile.h
+  GEN     .version
+  CHK     include/generated/compile.h
+make[4]: Nothing to be done for '__modpost'.
+  MODINFO modules.builtin.modinfo
+  GEN     modules.builtin
+BTF: .tmp_vmlinux.btf: pahole (pahole) is not available
+Failed to generate BTF for vmlinux
+Try to disable CONFIG_DEBUG_INFO_BTF
+make[3]: *** [Makefile:1168: vmlinux] Error 1
+make[2]: *** [debian/rules:7: build-arch] Error 2
+dpkg-buildpackage: error: debian/rules binary subprocess returned exit status 2
+make[1]: *** [scripts/Makefile.package:83: bindeb-pkg] Error 2
+make: *** [Makefile:1553: bindeb-pkg] Error 2
+hbarta@olive:~/Downloads/linux-5.19.8$ sudo apt install -t stable pahole
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+Some packages could not be installed. This may mean that you have
+requested an impossible situation or if you are using the unstable
+distribution that some required packages have not yet been created
+or been moved out of Incoming.
+The following information may help to resolve the situation:
+
+The following packages have unmet dependencies:
+ pahole : Depends: libbpf0 (>= 1:0.4.0) but 1:0.3-2 is to be installed
+E: Unable to correct problems, you have held broken packages.
+hbarta@olive:~/Downloads/linux-5.19.8$ 
+```
+
+For Try #3 will try to disable `pahole`. No option. ENV VAR is a value. 0 in .config and 123 in the source config.
+
+Stuck for now.
+
+## Testing
+
+Working this out is fraught with opportunities for errors. Iterative configuration and installation steps can pile up to produce a system that is not easily reproduced. For this reason, the procedure will be tested on another host that is more or less a vanilla install so that the steps and commands can be verified to work as expected and desired.
 
 ## Contributing
 
