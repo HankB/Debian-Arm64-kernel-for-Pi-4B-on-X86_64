@@ -155,6 +155,8 @@ For Try #3 will try to disable `pahole`. No option. ENV VAR is a value. 0 in .co
 
 Stuck for now.
 
+Per IRC user kibi, `pahole` is also in the `dwarves` package for Bullseye. I installed that and the build completed. It booted and came up and the bugs I experienced previously seemed to be banished. However the SD card timeouts have returned. Bug filed at <https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1019700>
+
 ## Testing
 
 Working this out is fraught with opportunities for errors. Iterative configuration and installation steps can pile up to produce a system that is not easily reproduced. For this reason, the procedure will be tested on another host that is more or less a vanilla install so that the steps and commands can be verified to work as expected and desired.
