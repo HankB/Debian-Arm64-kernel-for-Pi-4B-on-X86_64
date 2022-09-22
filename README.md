@@ -17,7 +17,7 @@ And lastly, if there is already a ready source of this information packaged in a
 ## Status
 
 * Built a kernel - Yay!
-* Does it boot - No!
+* Does it boot - Yes!
 
 ## Environment
 
@@ -30,79 +30,35 @@ Host is a desktop with Intel I7-4770K, 32GB RAM and SSD storage running Debian B
 
 ## Procedure
 
-* Install toolchain
-  * apt install libssl-dev libelf-dev zlib1g-dev lz4 pahole gcc-10-aarch64-linux-gnu gcc-arm-linux-gnueabihf ccache kernel-wedge
-* Download the tarball from https://www.kernel.org/ for 5.19.8 and unpack.
-* Copy the config from a Pi running 5.19.0 on Bookworm (Actually from the SSD mounted on the desktop)
+### Install toolchain
 
 ```text
-hbarta@olive:~/Downloads/linux-5.19.8$ cp /mnt/sdg2/boot/config-5.19.0-1-arm64 .config
+apt install libssl-dev libelf-dev zlib1g-dev lz4 gcc-10-aarch64-linux-gnu gcc-arm-linux-gnueabihf ccache kernel-wedge dwarves wget crossbuild-essential-arm64 flex bc
 ```
 
-* Add to PATH `PATH=/usr/lib/ccache:$PATH`
-* Execute build command `make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- bindeb-pkg -j8`
+### fetch kernel source
 
-## Result 
-
-The build asked a few more questions to which I generally answered 'n' or accepted the default selection. Signing modules concerned me a bit. The config has been added to this repo.
-
-Broke on `No rule to make target 'n', needed by 'certs/x509_certificate_list'` set to 'n' (should be ''.)
+Download the tarball from https://www.kernel.org/ for 5.19.8 and unpack.
 
 ```text
-hbarta@olive:~/Downloads/linux-5.19.8$ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- bindeb-pkg -j8
-sh ./scripts/package/mkdebian
-dpkg-buildpackage -r"fakeroot -u" -a$(cat debian/arch)  -b -nc -uc
-dpkg-buildpackage: info: source package linux-upstream
-dpkg-buildpackage: info: source version 5.19.8-1
-dpkg-buildpackage: info: source distribution bullseye
-dpkg-buildpackage: info: source changed by hbarta <hbarta@olive>
-dpkg-buildpackage: info: host architecture arm64
- dpkg-source --before-build .
- debian/rules binary
-make KERNELRELEASE=5.19.8 ARCH=arm64    KBUILD_BUILD_VERSION=1 -f ./Makefile
-  DESCEND bpf/resolve_btfids
-  CALL    scripts/atomic/check-atomics.sh
-  CALL    scripts/checksyscalls.sh
-make[4]: *** No rule to make target 'n', needed by 'certs/x509_certificate_list'.  Stop.
-make[4]: *** Waiting for unfinished jobs....
-make[3]: *** [Makefile:1847: certs] Error 2
-make[3]: *** Waiting for unfinished jobs....
-  CHK     include/generated/compile.h
-make[2]: *** [debian/rules:7: build-arch] Error 2
-dpkg-buildpackage: error: debian/rules binary subprocess returned exit status 2
-make[1]: *** [scripts/Makefile.package:83: bindeb-pkg] Error 2
-make: *** [Makefile:1553: bindeb-pkg] Error 2
-hbarta@olive:~/Downloads/linux-5.19.8$ 
+wget https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.19.8.tar.xz
+tar xf linux-5.19.8.tar.xz
+cd linux-5.19.8
 ```
 
-Solution: `make menuconfig` and navigate
-* `Cryptographic API`
-  * `Certificates for signature checking` (hint: last option)
-    * `Additional X.509 keys for default system keyring` And set to '', save and exit.
-
-This appears to have restarted config with an empty slate. :-/
+Copy the config from a Pi running 5.19.0 on Bookworm. This will be in /boot on the running Pi. Save the file in the directory created when unpacking the linux source (e.g. `.../linux-5.19.8`) and make a copy (or rename) to be used to guide the build.
 
 ```text
-  SYNC    include/config/auto.conf.cmd
-*
-* Restart config...
-*
-*
-* Platform selection
-*
-Actions Semi Platforms (ARCH_ACTIONS) [N/y/?] (NEW) 
-.
-.
-.
+cp config-5.19.8 .config
 ```
 
-Copied working config as above and restarted make. When it came to
+Adjust path and kick off the build
 
 ```text
-    Automatically sign all modules (MODULE_SIG_ALL) [Y/n/?] (NEW) n
+PATH=/usr/lib/ccache:$PATH
+time -p make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- bindeb-pkg -j$(nproc)
 ```
-
-Answer 'n' to sidestep the certificate issue. There were a few other questions that I left default.
+[First try notes](try-1.md)
 
 ### Try 2
 
