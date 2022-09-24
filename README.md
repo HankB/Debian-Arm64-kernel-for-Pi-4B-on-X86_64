@@ -25,8 +25,21 @@ Host is a desktop with Intel I7-4770K, 32GB RAM and SSD storage running Debian B
 
 ## Questions
 
-* Where should I be getting the desired kernel source?
-* How should I be managing configuration? (e.g. `.config`)
+* From `kibi` on IRC
+> I recommend this: git clone https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git (which by default will be known as 'origin') then git remote add stable https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git && git fetch stable
+
+```text
+git clone https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+cd linux
+git remote add stable https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
+git fetch stable
+```
+
+* How should I be managing configuration? (e.g. `.config`) - Copy config from a working system (in `/boot` for Debian/Pi) and
+
+```text
+make ARCH=arm64 defconfig
+```
 
 ## Procedure
 
@@ -38,12 +51,21 @@ apt install libssl-dev libelf-dev zlib1g-dev lz4 gcc-10-aarch64-linux-gnu gcc-ar
 
 ### fetch kernel source
 
-Download the tarball from https://www.kernel.org/ for 5.19.8 and unpack.
+This can come from two sources (at least.) A tarball for a particular release can be downloaded from kernel.org. For example
 
 ```text
 wget https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.19.8.tar.xz
 tar xf linux-5.19.8.tar.xz
 cd linux-5.19.8
+```
+
+A local copy can be cloned from a remote repo when trying to narrow down a commit that introduced a bug. (e.g. when using `git bisect ...`)
+
+```text
+git clone https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+cd linux
+git remote add stable https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
+git fetch stable
 ```
 
 Copy the config from a Pi running 5.19.0 on Bookworm. This will be in /boot on the running Pi. Save the file in the directory created when unpacking the linux source (e.g. `.../linux-5.19.8`) and make a copy (or rename) to be used to guide the build.
